@@ -93,10 +93,28 @@ test("plans, recalculates, displays every view, and preserves local privacy", as
     path: testInfo.outputPath("pitch.png"),
     fullPage: true,
   });
+  const readPositions = () =>
+    page.locator(".pitch-player:not(.is-keeper)").evaluateAll((elements) =>
+      elements.map((element) => ({
+        number: element.querySelector(".player-token")!.textContent,
+        position: element.querySelector(".position-label")!.textContent,
+      })),
+    );
+  const startingPositions = await readPositions();
   await page
     .getByRole("button", { name: "Tramo siguiente", exact: true })
     .click();
   await expect(page.locator(".pitch-heading")).toContainText("05:00");
+  const continuingPlayers = (await readPositions()).filter((player) =>
+    startingPositions.some((previous) => previous.number === player.number),
+  );
+  expect(continuingPlayers).toHaveLength(3);
+  for (const player of continuingPlayers) {
+    expect(player.position).toBe(
+      startingPositions.find((previous) => previous.number === player.number)!
+        .position,
+    );
+  }
   await page
     .locator(".view-tabs")
     .getByRole("button", { name: "Rotaciones", exact: true })
@@ -177,15 +195,21 @@ test("uses separate minutes and seconds for exact substitution intervals", async
   await openTeam(page);
   await expect(page.getByLabel("Minutos del intervalo")).toHaveValue("6");
   await expect(page.getByLabel("Segundos del intervalo")).toHaveValue("15");
-  const intervalBounds = await page.getByLabel("Minutos del intervalo").boundingBox();
-  const secondsBounds = await page.getByLabel("Segundos del intervalo").boundingBox();
+  const intervalBounds = await page
+    .getByLabel("Minutos del intervalo")
+    .boundingBox();
+  const secondsBounds = await page
+    .getByLabel("Segundos del intervalo")
+    .boundingBox();
   const swapsBounds = await page.getByLabel("Cambios por ronda").boundingBox();
   expect(intervalBounds).not.toBeNull();
   expect(secondsBounds).not.toBeNull();
   expect(swapsBounds).not.toBeNull();
   expect(Math.abs(intervalBounds!.y - secondsBounds!.y)).toBeLessThanOrEqual(1);
   expect(Math.abs(intervalBounds!.y - swapsBounds!.y)).toBeLessThanOrEqual(1);
-  expect(Math.abs(intervalBounds!.height - swapsBounds!.height)).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(intervalBounds!.height - swapsBounds!.height),
+  ).toBeLessThanOrEqual(1);
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,

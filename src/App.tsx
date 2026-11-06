@@ -987,7 +987,7 @@ export function App() {
                     incluye en el reparto.{" "}
                     {locked
                       ? "Minutos estimados según el plan; no verificados."
-                      : "La variedad de posiciones es secundaria al equilibrio de minutos."}
+                      : "Quienes siguen en el campo conservan su posición entre cambios."}
                   </p>
                 </>
               ) : (
@@ -1132,8 +1132,8 @@ export function App() {
               <Trophy size={18} />
               <span>
                 Se minimiza la diferencia de minutos con el intervalo y el
-                número exacto de cambios elegidos. Las posiciones rotan como
-                objetivo secundario.
+                número exacto de cambios elegidos. Quienes siguen en el campo
+                conservan su posición. Los que entran ocupan los puestos libres.
               </span>
             </li>
             <li>

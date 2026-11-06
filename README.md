@@ -39,7 +39,7 @@ To test the Pages path locally, build with `npm run build -- --base=/control-cam
 - Freely edit and recalculate before kickoff. Changes invalidate the previous plan. Settings lock at kickoff.
 - Enter substitution intervals with separate whole minutes and seconds, with seconds from zero to fifty-nine and a positive total duration. Six minutes and fifteen seconds schedules exchanges every 06:15, not every 6.15 decimal minutes. Previously saved intervals retain their original durations.
 - Every calculation randomly draws the starting five from the field players before optimizing the rotations. The keeper stays fixed, and the best achievable minute difference is unchanged. Restoring a saved game does not redraw its plan. Random draws can repeat; there is no cross-game participation history.
-- Minimize the maximum-minus-minimum field-player minutes. The full-game keeper is excluded. Automatic position variety is secondary.
+- Minimize the maximum-minus-minimum field-player minutes. The full-game keeper is excluded. Players remaining on the pitch keep their positions at each exchange. Incoming players fill the vacated positions, favoring position variety among those available slots without affecting minute fairness.
 - Carry intervals across halftime. Apply an exchange due exactly at halftime at the second-half start. Never exchange at full time.
 - Preview any scheduled lineup, bench, exchange, and minute total. The live view automatically follows the schedule and explicitly shows estimated rather than verified actual participation.
 

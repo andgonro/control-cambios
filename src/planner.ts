@@ -176,11 +176,19 @@ export async function createPlan(
   const totals = Object.fromEntries(
     settings.players.map((player) => [player.id, 0]),
   );
+  let previousField: string[] = [];
   const segments = slots.map((slot, index) => {
     const permutations = permute(selected[index]);
     let best = permutations[0];
     let bestScore = Infinity;
     for (const candidate of permutations) {
+      if (
+        candidate.some(
+          (id, position) =>
+            previousField.includes(id) && previousField[position] !== id,
+        )
+      )
+        continue;
       const score = candidate.reduce(
         (sum, id, position) => sum + positionSeconds[id][position],
         0,
@@ -194,6 +202,7 @@ export async function createPlan(
       positionSeconds[best[position]][position] += slot.end - slot.start;
       totals[best[position]] += slot.end - slot.start;
     }
+    previousField = best;
     return { ...slot, field: best };
   });
   totals[settings.keeperId] = FULL;

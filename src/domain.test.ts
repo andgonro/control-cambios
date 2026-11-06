@@ -154,6 +154,12 @@ describe("optimal rotation planner", () => {
               (id) => !plan.segments[index - 1].field.includes(id),
             ),
           ).toHaveLength(swaps);
+        if (index > 0) {
+          const previous = plan.segments[index - 1].field;
+          for (const [position, id] of segment.field.entries()) {
+            if (previous.includes(id)) expect(previous[position]).toBe(id);
+          }
+        }
       }
       expect(
         Object.values(plan.totals).reduce((sum, value) => sum + value, 0),
