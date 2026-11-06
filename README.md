@@ -14,6 +14,16 @@ Requires Node.js 22.12 or newer within a supported Node release.
 
 The production preview supports offline preparation. The development server does not register the offline service worker.
 
+## GitHub Pages
+
+Open the hosted app on your phone at https://andgonro.github.io/control-cambios/.
+
+The repository is public, including the default player nicknames and numbers in the source. User-entered game details remain local to each browser; a phone does not share the game saved on a computer.
+
+The deployment workflow tests and builds pushes to `main`, then publishes the production bundle through GitHub Pages. Repository Settings > Pages must use GitHub Actions as its source. The build automatically uses `/control-cambios/` in GitHub Actions, while normal local development keeps `/`.
+
+To test the Pages path locally, build with `npm run build -- --base=/control-cambios/`, then serve it with `npm run preview -- --base=/control-cambios/`. Open the preview URL followed by `/control-cambios/`.
+
 ## Validate
 
 - Unit tests: `npm test`.
