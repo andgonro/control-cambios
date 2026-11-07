@@ -44,6 +44,9 @@ As a coach, I want to inspect a fair plan and each child's minutes before kickof
 
 - [ ] Every segment has five distinct field players and the selected goalkeeper, with all other participants on the bench.
 - [ ] The plan minimizes the difference between the greatest and least total field-player minutes under my selected settings.
+- [ ] After finding the best achievable final minute difference, the app tries to reduce cumulative minute imbalance at scheduled rounds, so a recently substituted player is not sent back to the bench early while others continue building a larger lead.
+- [ ] Improving cumulative balance during the game never worsens the best achievable final minute difference.
+- [ ] If the short in-game-balance optimization cannot find a feasible improvement, the app still provides the proven best-final-minute plan.
 - [ ] The app does not silently change the interval or exact swap count to obtain a better balance.
 - [ ] Each round exchanges exactly the chosen number of field players with the same number of substitutes.
 - [ ] The goalkeeper never enters the substitution pool.

@@ -151,7 +151,8 @@ export async function createPlan(
         });
       }
     }
-    const solved = await glpk.solve(model, {
+    const solveStartedAt = performance.now();
+    let solved = await glpk.solve(model, {
       msglev: glpk.GLP_MSG_OFF,
       presol: true,
       tmlim: 25,
@@ -161,6 +162,78 @@ export async function createPlan(
       throw new Error(
         "No se pudo demostrar el mejor reparto en 25 segundos. Prueba otro intervalo o numero de cambios y vuelve a calcular.",
       );
+    const bestFinalGap = Math.round(
+      solved.result.vars.highest - solved.result.vars.lowest,
+    );
+    model.subjectTo.push({
+      name: "bestFinalGap",
+      vars: [
+        { name: "highest", coef: 1 },
+        { name: "lowest", coef: -1 },
+      ],
+      bnds: { type: glpk.GLP_FX, lb: bestFinalGap, ub: bestFinalGap },
+    });
+    const runningBalance: { name: string; coef: number }[] = [];
+    for (let slot = 0; slot < slots.length; slot++) {
+      const mean = (5 * slots[slot].end) / (players.length * unit);
+      for (let player = 0; player < players.length; player++) {
+        const above = `runningAbove${player}s${slot}`;
+        const below = `runningBelow${player}s${slot}`;
+        const cumulative = slots
+          .slice(0, slot + 1)
+          .map((previous, previousSlot) => ({
+            name: presence(player, previousSlot),
+            coef: (previous.end - previous.start) / unit,
+          }));
+        runningBalance.push(
+          { name: above, coef: 1 },
+          { name: below, coef: 1 },
+        );
+        model.bounds!.push(
+          { name: above, type: glpk.GLP_DB, lb: 0, ub: FULL / unit },
+          { name: below, type: glpk.GLP_DB, lb: 0, ub: FULL / unit },
+        );
+        model.subjectTo.push(
+          {
+            name: `runningAboveMean${player}s${slot}`,
+            vars: [...cumulative, { name: above, coef: -1 }],
+            bnds: { type: glpk.GLP_UP, lb: 0, ub: mean },
+          },
+          {
+            name: `runningBelowMean${player}s${slot}`,
+            vars: [
+              ...cumulative.map((term) => ({
+                ...term,
+                coef: -term.coef,
+              })),
+              { name: below, coef: -1 },
+            ],
+            bnds: { type: glpk.GLP_UP, lb: 0, ub: -mean },
+          },
+        );
+      }
+    }
+    model.objective = {
+      direction: glpk.GLP_MIN,
+      name: "equilibrioDuranteElPartido",
+      vars: runningBalance,
+    };
+    const remainingSeconds = Math.floor(
+      25 - (performance.now() - solveStartedAt) / 1000,
+    );
+    if (remainingSeconds > 0) {
+      const balanced = await glpk.solve(model, {
+        msglev: glpk.GLP_MSG_OFF,
+        presol: true,
+        tmlim: Math.min(3, remainingSeconds),
+        mipgap: 0,
+      });
+      if (
+        balanced.result.status === glpk.GLP_OPT ||
+        balanced.result.status === glpk.GLP_FEAS
+      )
+        solved = balanced;
+    }
     for (let slot = 0; slot < slots.length; slot++)
       selected.push(
         players

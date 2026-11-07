@@ -57,6 +57,7 @@ The initial formation is 2-2-1, the interval is five minutes and zero seconds, a
 - FR-2.8: At a rotation boundary, keep each continuing field player in the same position index, and assign incoming players only to positions vacated by outgoing players. Favor variety among those vacancies; do not move continuing players merely to increase variety. Do not change assignments midway through a segment.
 - FR-2.9: Randomly shuffle the non-goalkeeper participants for every successful calculation or recalculation, using the resulting first five as the initial field lineup. The random draw must not change the roster's displayed order, selected keeper, exchange count, interval, or optimal minute difference. The no-substitution case must also use a random starting five when there are substitutes available.
 - FR-2.10: Permit repeated draws by chance. Do not promise different starters or finishers on every calculation, or balanced starts across a season without historical records. A restored saved plan must not be redrawn automatically.
+- FR-2.11: After finding the smallest achievable final field-player minute difference, try to reduce the sum of players' absolute deviations from the field-player mean at scheduled segment boundaries. Never worsen the best achievable final difference; if the bounded secondary optimization cannot produce a feasible plan, retain the final-optimal plan.
 
 ### Match Timing
 
@@ -107,6 +108,7 @@ The initial formation is 2-2-1, the interval is five minutes and zero seconds, a
 - TR-1.7: Keep persisted intervals in decimal minutes for compatibility, but convert them to rounded integer seconds for scheduling and minute/second display. Accept negligible floating-point representation error around a whole second; reject actual fractional-second intervals. A legacy value of 6.15 minutes remains 06:09, while a new six-minute/fifteen-second entry persists as 6.25 minutes and schedules 375-second rounds.
 - TR-1.8: Use browser-worker optimization to prove the smallest feasible minute difference. A twenty-five-second solve limit must return a clear failure if optimality cannot be proved; do not label a merely feasible plan as optimal or allow it to start as a completed calculation. Keep calculation progress and cancellation available.
 - TR-1.9: Apply an unbiased shuffle to a copy of the eligible field-player list before planning. Preserve continuing positions during subsequent assignment, using accumulated position time only to rank the available slots for incoming players. Position variety is a best-effort assignment preference, not a claim of globally optimal position distribution.
+- TR-1.10: Measure in-game balance as the sum, over every scheduled segment boundary, of each field player's absolute deviation from the mean cumulative field-player minutes. First prove the minimum final minute difference, then run a secondary optimization for at most three seconds with that final gap fixed. Accept a feasible secondary result or retain the proven final-optimal plan; both passes share the existing twenty-five-second limit.
 
 ### Browser Timing and Offline Operation
 
@@ -162,7 +164,7 @@ The initial formation is 2-2-1, the interval is five minutes and zero seconds, a
 
 ## Verification Notes and Known Gaps
 
-- Automated unit coverage checks squad validation, whole-second interval conversion, optimal minute balancing, exact exchanges, randomized draws, continuing-player position indices, clock boundaries, and saved-game consistency. Browser coverage exercises desktop Chromium, phone-sized Chromium, and phone-sized WebKit, including visible pitch positions and interval-control alignment.
+- Automated unit coverage checks squad validation, whole-second interval conversion, optimal final-minute balancing, bounded in-game minute balancing, exact exchanges, randomized draws, continuing-player position indices, clock boundaries, and saved-game consistency. Browser coverage exercises desktop Chromium, phone-sized Chromium, and phone-sized WebKit, including visible pitch positions and interval-control alignment.
 - GitHub Actions gates deployment on unit tests and the production build. Browser tests are a separate local verification step; the deployment workflow does not currently run them.
 - The hosted repository-path build has been checked for phone rendering, optimization, manifest scope, and offline refresh. Physical iOS/Android hardware validation remains outstanding; browser emulation must not be described as proof for every device.
 - Offline-readiness text is currently hidden at phone breakpoints, so the small-screen readiness indication does not yet fully meet FR-5.5. Existing automated checks find the text in the DOM but do not establish that it is visibly readable on a phone.

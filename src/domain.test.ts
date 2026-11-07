@@ -114,7 +114,7 @@ describe("optimal rotation planner", () => {
           ).toHaveLength(config.swaps);
       }
     }
-  });
+  }, 15_000);
 
   it("randomizes the starting five even when the interval produces no substitutions", async () => {
     const config = settings(10, 60, 2);
@@ -172,6 +172,20 @@ describe("optimal rotation planner", () => {
   it("achieves exactly equal field minutes where feasible", async () => {
     expect((await createPlan(settings(11, 5, 5), solver)).gap).toBe(0);
   });
+  it("does not immediately bench the player who just came on when one substitute is available", async () => {
+    const config = settings(7, 5, 1);
+    const plan = await createPlan(config, solver);
+    const firstIncoming = plan.segments[1].field.filter(
+      (id) => !plan.segments[0].field.includes(id),
+    );
+    const nextOutgoing = plan.segments[1].field.filter(
+      (id) => !plan.segments[2].field.includes(id),
+    );
+
+    expect(firstIncoming).toHaveLength(1);
+    expect(nextOutgoing).toHaveLength(1);
+    expect(nextOutgoing).not.toContain(firstIncoming[0]);
+  });
   it("matches an exhaustive optimum for a small unequal-segment case", async () => {
     const config = settings(7, 18, 1);
     const durations = [1080, 1080, 840];
@@ -193,6 +207,87 @@ describe("optimal rotation planner", () => {
       }
     }
     expect((await createPlan(config, solver)).gap).toBe(optimal);
+  });
+  it("balances cumulative minutes among plans with the best final gap", async () => {
+    const config = settings(10, 18, 2);
+    vi.spyOn(Math, "random").mockReturnValue(0.999999);
+    const plan = await createPlan(config, solver);
+    const fieldPlayers = config.players
+      .filter((player) => player.id !== config.keeperId)
+      .map((player) => player.id);
+    let bestFinalGap = Infinity;
+    let bestCumulativeImbalance = Infinity;
+    function pairs(items: string[]): string[][] {
+      return items.flatMap((first, index) =>
+        items.slice(index + 1).map((second) => [first, second]),
+      );
+    }
+
+    function enumerate(index: number, field: string[], totals: number[], spread: number) {
+      const duration = plan.segments[index].end - plan.segments[index].start;
+      const nextTotals = [...totals];
+      for (const id of field)
+        nextTotals[fieldPlayers.indexOf(id)] += duration;
+      const values = fieldPlayers.map((_, player) => nextTotals[player]);
+      const mean = values.reduce((sum, value) => sum + value, 0) / values.length;
+      const nextImbalance =
+        spread + values.reduce((sum, value) => sum + Math.abs(value - mean), 0);
+
+      if (index === plan.segments.length - 1) {
+        const finalGap = Math.max(...values) - Math.min(...values);
+        if (
+          finalGap < bestFinalGap ||
+          (finalGap === bestFinalGap &&
+            nextImbalance < bestCumulativeImbalance)
+        ) {
+          bestFinalGap = finalGap;
+          bestCumulativeImbalance = nextImbalance;
+        }
+        return;
+      }
+
+      const bench = fieldPlayers.filter((id) => !field.includes(id));
+      for (const outgoingPlayers of pairs(field)) {
+        for (const incomingPlayers of pairs(bench)) {
+          const outgoing = new Set(outgoingPlayers);
+          enumerate(
+            index + 1,
+            [
+              ...field.filter((id) => !outgoing.has(id)),
+              ...incomingPlayers,
+            ],
+            nextTotals,
+            nextImbalance,
+          );
+        }
+      }
+    }
+
+    enumerate(0, plan.segments[0].field, fieldPlayers.map(() => 0), 0);
+
+    expect(plan.gap).toBe(bestFinalGap);
+    const plannedImbalance = plan.segments.reduce(
+      (sum, segment) => {
+        const elapsed = segment.end;
+        const totals = fieldPlayers.map((id) =>
+          plan.segments.reduce(
+            (minutes, previous) =>
+              minutes +
+              (previous.field.includes(id)
+                ? Math.max(0, Math.min(elapsed, previous.end) - previous.start)
+                : 0),
+            0,
+          ),
+        );
+        const mean = totals.reduce((total, value) => total + value, 0) / totals.length;
+        return (
+          sum +
+          totals.reduce((total, value) => total + Math.abs(value - mean), 0)
+        );
+      },
+      0,
+    );
+    expect(plannedImbalance).toBeCloseTo(bestCumulativeImbalance);
   });
   it("keeps halftime substitutions pending until second-half kickoff", async () => {
     const plan = await createPlan(settings(7, 5, 1), solver);
