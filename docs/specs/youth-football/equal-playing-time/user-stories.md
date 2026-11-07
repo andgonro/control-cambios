@@ -79,6 +79,7 @@ As a coach, I want to see where every child is scheduled to be at any point, so 
 - [ ] The pitch names each occupied position and identifies its assigned child.
 - [ ] The bench identifies all participants who are not currently scheduled on the pitch.
 - [ ] I can inspect the complete rotation timeline across both halves, not just the next substitution.
+- [ ] Each rotation timestamp lets me inspect every child's cumulative scheduled minutes up to that moment, including the goalkeeper, and makes clear that the figures are estimates.
 - [ ] Inspecting a future or past segment does not alter the live clock or current game state.
 - [ ] Positions remain consistent within a segment and change automatically only at scheduled boundaries.
 - [ ] Inspecting the lineup after an exchange shows continuing children in the same named positions as before the exchange, with substitutes occupying the vacated positions.

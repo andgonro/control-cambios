@@ -120,6 +120,20 @@ test("plans, recalculates, displays every view, and preserves local privacy", as
     .getByRole("button", { name: "Rotaciones", exact: true })
     .click();
   await expect(page.locator(".timeline-row")).toHaveCount(10);
+  const firstRotationMinutes = page
+    .locator(".timeline-row")
+    .nth(1)
+    .locator(".timeline-minutes");
+  await firstRotationMinutes.locator("summary").click();
+  await expect(
+    firstRotationMinutes.locator(".timeline-minute-item"),
+  ).toHaveCount(10);
+  await expect(
+    firstRotationMinutes
+      .locator(".timeline-minute-item")
+      .filter({ hasText: "Leo · #1 · Portero" })
+      .locator("strong"),
+  ).toHaveText("5 min");
   await page
     .locator(".view-tabs")
     .getByRole("button", { name: "Minutos", exact: true })

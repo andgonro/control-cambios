@@ -59,6 +59,18 @@ type Tab = "team" | "pitch" | "rotations" | "minutes";
 const initial = loadGame();
 const playerLabel = (player?: Player) =>
   player ? `${player.nickname} · #${player.number}` : "Sin asignar";
+function cumulativeMinutesAtRotations(settings: Settings, plan: Plan) {
+  const played = Object.fromEntries(
+    settings.players.map((player) => [player.id, 0]),
+  );
+  return plan.segments.map((slot) => {
+    const snapshot = { ...played };
+    const duration = slot.end - slot.start;
+    for (const id of slot.field) played[id] += duration;
+    played[settings.keeperId] += duration;
+    return snapshot;
+  });
+}
 
 function Modal({
   title,
@@ -134,6 +146,9 @@ export function App() {
   const currentSegment = plan?.segments[currentIndex];
   const nextSegment = plan?.segments[currentIndex + 1];
   const actual = plan ? minutesSoFar(settings, plan, state.elapsed) : {};
+  const playedAtRotation = plan
+    ? cumulativeMinutesAtRotations(settings, plan)
+    : [];
   const phaseLabel = {
     setup: "Antes del partido",
     first: "Primera parte",
@@ -918,6 +933,30 @@ export function App() {
                               </div>
                             )}
                           </div>
+                          <details className="timeline-minutes">
+                            <summary>
+                              <Timer size={14} /> Minutos acumulados
+                            </summary>
+                            <div className="timeline-minute-grid">
+                              {settings.players.map((player) => (
+                                <div
+                                  className="timeline-minute-item"
+                                  key={player.id}
+                                >
+                                  <span>
+                                    {playerLabel(player)}
+                                    {player.id === settings.keeperId &&
+                                      " · Portero"}
+                                  </span>
+                                  <strong>
+                                    {formatMinutes(
+                                      playedAtRotation[index][player.id] ?? 0,
+                                    )}
+                                  </strong>
+                                </div>
+                              ))}
+                            </div>
+                          </details>
                           <button
                             className="icon-button"
                             title={`Ver alineacion del minuto ${slot.start / 60}`}

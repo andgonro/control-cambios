@@ -1258,7 +1258,9 @@ h1 {
   color: #a7b9ac;
 }
 .timeline-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(68px, 93px) minmax(0, 1fr) 32px;
+  grid-template-rows: auto auto;
   align-items: center;
   gap: 20px;
   border-bottom: 1px solid var(--line);
@@ -1271,7 +1273,7 @@ h1 {
   padding-left: 9px;
 }
 .timeline-time {
-  min-width: 93px;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -1287,7 +1289,7 @@ h1 {
   color: #8d9f92;
 }
 .timeline-changes {
-  flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -1313,6 +1315,53 @@ h1 {
 }
 .timeline-out span {
   background: #fcf5f0;
+}
+.timeline-row > .icon-button {
+  grid-column: 3;
+  grid-row: 1;
+}
+.timeline-minutes {
+  grid-column: 2 / 4;
+  grid-row: 2;
+  min-width: 0;
+  font-size: 10px;
+}
+.timeline-minutes summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  color: #647b6a;
+  cursor: pointer;
+  list-style: none;
+}
+.timeline-minutes summary::-webkit-details-marker {
+  display: none;
+}
+.timeline-minute-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(135px, 1fr));
+  gap: 4px 12px;
+  margin-top: 9px;
+}
+.timeline-minute-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  padding: 4px 6px;
+  background: #f2f6f3;
+  color: #65756a;
+}
+.timeline-minute-item > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.timeline-minute-item strong {
+  flex: none;
+  color: #334d3c;
+  font-variant-numeric: tabular-nums;
 }
 .timeline-end {
   display: flex;
@@ -1691,10 +1740,11 @@ dialog p {
     padding: 20px;
   }
   .timeline-row {
+    grid-template-columns: minmax(58px, 68px) minmax(0, 1fr) 28px;
     gap: 12px;
   }
   .timeline-time {
-    min-width: 68px;
+    min-width: 0;
   }
   .timeline-row > .icon-button {
     width: 28px;
@@ -2097,6 +2147,7 @@ dialog p {
   }
   .timeline-row {
     padding: 14px 0;
+    grid-template-columns: 65px minmax(0, 1fr) 24px;
     gap: 9px;
     align-items: flex-start;
   }
@@ -2104,7 +2155,7 @@ dialog p {
     padding-left: 7px;
   }
   .timeline-time {
-    min-width: 65px;
+    min-width: 0;
   }
   .timeline-time strong {
     font-size: 24px;

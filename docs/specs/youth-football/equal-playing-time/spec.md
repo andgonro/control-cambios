@@ -83,6 +83,7 @@ The initial formation is 2-2-1, the interval is five minutes and zero seconds, a
 - FR-4.8: Do not promise audible, visible, or timely alerts while the browser is suspended or closed.
 - FR-4.9: Present interval summaries and round timestamps as minutes and seconds, not as decimal-minute values. Align the minute, second, and swap-count inputs; keep visible unit labels from shifting their input rows or overlapping neighboring controls.
 - FR-4.10: Provide squad setup, pitch, rotation timeline, and minute views within one SPA, with phone navigation between views and a route back from previewing a lineup to the live scheduled state.
+- FR-4.11: For every rotation timestamp, allow the coach to inspect each participant's cumulative scheduled playing minutes up to that moment, including the fixed goalkeeper. Treat these values as estimates from the plan, not verified participation.
 
 ### Local Data, Recovery, and New Game
 
