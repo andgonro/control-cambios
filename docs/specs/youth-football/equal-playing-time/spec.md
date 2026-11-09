@@ -58,6 +58,7 @@ The initial formation is 2-2-1, the interval is five minutes and zero seconds, a
 - FR-2.9: Randomly shuffle the non-goalkeeper participants for every successful calculation or recalculation, using the resulting first five as the initial field lineup. The random draw must not change the roster's displayed order, selected keeper, exchange count, interval, or optimal minute difference. The no-substitution case must also use a random starting five when there are substitutes available.
 - FR-2.10: Permit repeated draws by chance. Do not promise different starters or finishers on every calculation, or balanced starts across a season without historical records. A restored saved plan must not be redrawn automatically.
 - FR-2.11: After finding the smallest achievable final field-player minute difference, try to reduce the sum of players' absolute deviations from the field-player mean at scheduled segment boundaries. Never worsen the best achievable final difference; if the bounded secondary optimization cannot produce a feasible plan, retain the final-optimal plan.
+- FR-2.12: When a child enters during a scheduled exchange, keep them on the field through at least the following exchange whenever a schedule exists with the best achievable final minute difference. Permit an immediate return to the bench only when no such schedule is feasible; for example, exchanging all five field players necessarily replaces every incoming child at the next round.
 
 ### Match Timing
 
@@ -110,6 +111,7 @@ The initial formation is 2-2-1, the interval is five minutes and zero seconds, a
 - TR-1.8: Use browser-worker optimization to prove the smallest feasible minute difference. A twenty-five-second solve limit must return a clear failure if optimality cannot be proved; do not label a merely feasible plan as optimal or allow it to start as a completed calculation. Keep calculation progress and cancellation available.
 - TR-1.9: Apply an unbiased shuffle to a copy of the eligible field-player list before planning. Preserve continuing positions during subsequent assignment, using accumulated position time only to rank the available slots for incoming players. Position variety is a best-effort assignment preference, not a claim of globally optimal position distribution.
 - TR-1.10: Measure in-game balance as the sum, over every scheduled segment boundary, of each field player's absolute deviation from the mean cumulative field-player minutes. First prove the minimum final minute difference, then run a secondary optimization for at most three seconds with that final gap fixed. Accept a feasible secondary result or retain the proven final-optimal plan; both passes share the existing twenty-five-second limit.
+- TR-1.11: In the secondary optimization, prohibit a field player's presence pattern from being absent, present, absent across three consecutive segments. Keep the final minute gap fixed. If the bounded secondary solve finds no feasible schedule satisfying this rule, retain the original final-optimal schedule.
 
 ### Browser Timing and Offline Operation
 

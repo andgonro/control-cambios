@@ -173,6 +173,18 @@ export async function createPlan(
       ],
       bnds: { type: glpk.GLP_FX, lb: bestFinalGap, ub: bestFinalGap },
     });
+    for (let slot = 1; slot < slots.length - 1; slot++) {
+      for (let player = 0; player < players.length; player++)
+        model.subjectTo.push({
+          name: `minimumFieldStint${player}s${slot}`,
+          vars: [
+            { name: presence(player, slot - 1), coef: 1 },
+            { name: presence(player, slot), coef: -1 },
+            { name: presence(player, slot + 1), coef: 1 },
+          ],
+          bnds: { type: glpk.GLP_LO, lb: 0, ub: 0 },
+        });
+    }
     const runningBalance: { name: string; coef: number }[] = [];
     for (let slot = 0; slot < slots.length; slot++) {
       const mean = (5 * slots[slot].end) / (players.length * unit);

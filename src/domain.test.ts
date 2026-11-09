@@ -186,6 +186,20 @@ describe("optimal rotation planner", () => {
     expect(nextOutgoing).toHaveLength(1);
     expect(nextOutgoing).not.toContain(firstIncoming[0]);
   });
+  it("keeps every incoming player on through the following round when a compliant plan exists", async () => {
+    vi.spyOn(Math, "random").mockReturnValue(0.999999);
+    const config = settings(10, 5, 2);
+    const plan = await createPlan(config, solver);
+
+    for (let index = 1; index < plan.segments.length - 1; index++) {
+      const previous = plan.segments[index - 1].field;
+      const current = plan.segments[index].field;
+      const next = plan.segments[index + 1].field;
+      const incoming = current.filter((id) => !previous.includes(id));
+
+      for (const id of incoming) expect(next).toContain(id);
+    }
+  }, 35_000);
   it("matches an exhaustive optimum for a small unequal-segment case", async () => {
     const config = settings(7, 18, 1);
     const durations = [1080, 1080, 840];
